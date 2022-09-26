@@ -1,0 +1,33 @@
+CREATE OR REPLACE TABLE
+  `data-fellowship-7-363107.assignment3.transactions_nested` AS (
+  SELECT
+    channelGrouping,
+    ARRAY_AGG(STRUCT(geoNetwork_country,
+        country)) AS grouping_
+  FROM (
+    SELECT
+      channelGrouping,
+      geoNetwork_country,
+      ARRAY_AGG(STRUCT(date,
+          totals_transactions)
+      ORDER BY
+        date ASC) AS country
+    FROM (
+      SELECT
+        channelGrouping,
+        geoNetwork_country,
+        date,
+        SUM(totals_transactions) AS totals_transactions
+      FROM
+        `data-to-insights.ecommerce.rev_transactions`
+      GROUP BY
+        date,
+        geoNetwork_country,
+        channelGrouping
+      ORDER BY
+        date ASC)
+    GROUP BY
+      geoNetwork_country,
+      channelGrouping)
+  GROUP BY
+    channelGrouping)
